@@ -5,7 +5,9 @@ import * as Component from "./quartz/components"
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
-  afterBody: [],
+  afterBody: [
+    Component.Explorer()
+  ],
   footer: Component.Footer({
     links: {
       GitHub: "https://github.com/dreamMilk/RauzeQuartz",
@@ -28,7 +30,6 @@ export const defaultContentPageLayout: PageLayout = {
     Component.Search(),
     Component.Darkmode(),
     // Component.DesktopOnly(Component.Explorer()),
-    Component.Explorer()
   ],
   right: [
     Component.Graph(),
