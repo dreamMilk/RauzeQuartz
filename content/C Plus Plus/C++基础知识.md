@@ -1,3 +1,7 @@
+---
+created: 2024-08-30T01:37
+updated: 2024-08-31T18:02
+---
 
 # 字符串
 
@@ -24,7 +28,7 @@ std::cout << name4 << std::endl;  //ZhanSan
 
 在 C++中使用双引号包裹的多个字符本质上是`const char*`，在字符串赋值时会通过`char*`的隐式转换成为字符串
 
-```CPP
+```cpp
 #include<iostream>
 #include<string>
 
@@ -36,7 +40,7 @@ std::cout << name << std::endl;
 
 C 语言中处理字符数组`const char*`的函数`strlen`，`strcpy`等函数均可在 C++的字符串中找到对应的函数
 
-```CPP
+```cpp
 std::string name = "ZhangSan" + " hello!";              //ERROR
 std::string name = "ZhangSan";
 name += " hello!";                                      //OK
@@ -46,7 +50,7 @@ std::cout << name << std::endl;
 
 不可以直接将两个字符串常量相加，因为两个字符串常量其实是`const char*`，因此两个指针相加是错误操作。正确的字符串拼接方式是拆分成两步，将字符串变量与`const char*`相加，因为`+`操作被`<string>`重载后，可以进行字符串与字符数组指针相加操作
 
-```CPP
+```cpp
 // 使用值传递会出现字符串复制，影响程序性能
 void PrintString(std::string str){
 	std::cout << string << std::endl;
@@ -60,9 +64,8 @@ void PrintString(const std::string& str)
 
 # 隐式转换与 explicit 关键字
 
-类定义
-
 ```cpp
+//类定义
 class Entity
 {
 private:
@@ -98,3 +101,4 @@ printEntity(Entity("ZhangSan"))  //OK
 ## explicit 关键字
 
 在构造函数前面增加`explicit`关键字可以禁止上述的隐式转换，避免出现未知的类型转换，只能通过显式构造函数实例化对象，使得代码更加清晰
+
