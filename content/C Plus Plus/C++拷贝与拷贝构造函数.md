@@ -29,4 +29,23 @@ int main()
 }
 ```
 除了引用以外，每次使用 `=` 都是在进行一次拷贝，指针会复制内存地址值，变量会复制内存中的值
- 
+
+下面通过实现一个字符串类
+```cpp
+class String
+{
+private:
+	char* m_Buffer;
+	unsigned int m_Size;
+public:
+	String(const char* string)
+	{
+		m_Size = strlen(string);
+		m_Buffer = new char[m_Size];	//需注意字符串后需要终止符
+		for(int i=0;i<m_Size;i++)
+		{
+			
+		}
+	}
+}
+```
