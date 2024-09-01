@@ -4,7 +4,7 @@
 >  在读取或修改一个已经存在的对象时，应尽可能的避免拷贝，因为拷贝需要额外的时间开销
 
 通过字符串类的例子对相关概念进行讲解
-```cpp showLineNumbers title="字符串"
+```cpp
 struct Vector
 {
 	float x,y;
