@@ -5,7 +5,6 @@
 
 通过字符串类的例子对相关概念进行讲解
 ```cpp
-
 struct Vector
 {
 	float x,y;
