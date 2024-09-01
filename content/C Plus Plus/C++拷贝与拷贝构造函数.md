@@ -49,3 +49,13 @@ public:
 	}
 }
 ```
+其中关于字符数组的赋值部分存在三种方式
+```cpp
+//使用strcpy会在最后自动添加终止符  
+strcpy(m_Buffer,string);  
+//仅在输入的字符数组存在终止符时才可正常运行  
+memcpy(m_Buffer,string,m_Size+1);  
+//人为地增加终止符  
+memcpy(m_Buffer,string,m_Size);  
+m_Buffer[m_Size] = 0;
+```
