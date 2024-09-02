@@ -51,11 +51,13 @@ public:
 ```
 其中关于字符数组的赋值部分存在三种方式
 ```cpp
-//使用strcpy会在最后自动添加终止符  
+//下列两种方法仅在输入的字符数组存在终止符时才可正常运行 
+//strcpy将源字符数组逐一复制到目标数组，直到源字符数字的终止符停止  
 strcpy(m_Buffer,string);  
-//仅在输入的字符数组存在终止符时才可正常运行  
-memcpy(m_Buffer,string,m_Size+1);  
-//人为地增加终止符  
+//使用memcpy将源字符数组的最后一位终止符复制过来
+memcpy(m_Buffer,string,m_Size+1);
+
+//人为地增加终止符，保证字符数组是否有终止符，都不影响字符串的创建
 memcpy(m_Buffer,string,m_Size);  
 m_Buffer[m_Size] = 0;
 ```
