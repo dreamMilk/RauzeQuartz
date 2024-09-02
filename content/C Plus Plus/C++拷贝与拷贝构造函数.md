@@ -32,25 +32,108 @@ int main()
 
 下面通过实现一个字符串类
 ```cpp
-class String
-{
-private:
-	char* m_Buffer;
-	unsigned int m_Size;
-public:
-	String(const char* string)
-	{
-		m_Size = strlen(string);
-		m_Buffer = new char[m_Size+1];	//需注意字符串后需要终止符
-		memcpy(m_Buffer,string,m_Size);  
-  		m_Buffer[m_Size] = 0;
-	}
-	~String()
-	{
-		delete[] m_Buffer;
-	}
+#include<iostream>  
+  
+class String {  
+private:  
+    char* m_Buffer;  
+    unsigned int m_Size;  
+public:  
+    String(const char* string) {  
+        m_Size = strlen(string);  
+        m_Buffer = new char[m_Size+1];    //为终止符留一个字节  
+        memcpy(m_Buffer, string, m_Size);  
+        m_Buffer[m_Size] = 0;  
+    }  
+    ~String()  
+    {  
+        delete[] m_Buffer;  
+    }  
+  
+    char& operator[] (unsigned int index)  
+    {  
+        return m_Buffer[index];  
+    }  
+    friend std::ostream& operator<< (std::ostream& stream, const String& string);  
+};  
+  
+std::ostream& operator<< (std::ostream& stream, const String& string) {  
+    stream << string.m_Buffer;  
+    return stream;  
+}  
+  
+int main() {  
+    String string = "ZhangSan";  
+    String second = string;  
+    second[2] = 'e';    //两个字符串同时发生了变化  
+    std::cout << string << std::endl;  
 }
 ```
+在程序结束时发生了崩溃，主要是字符串 `second` 在拷贝时，是将内部属性进行了拷贝，因此两者的 `m_Buffer` 指向的是同一片内存空间。在程序结束时，调用两者的析构函数对同一个内存空间调用了两次 delete，于是程序崩溃了
+
+此外，修改 `second` 字符串导致 `string` 字符串的变化也同样说明了两者指向了同一个内存空间
+
+因此这种类型的拷贝称之为**浅拷贝**
+
+有时我们想使用独立于原对象的拷贝副本，那么需要进行**深拷贝**。深拷贝的方法有许多，例如 clone 函数或者自定义方法返回一个全新的对象。本文介绍一种使用拷贝构造函数的方法，当创建一个和源对象同类型的对象时会调用该方法
+```cpp
+//c++默认拷贝构造函数（浅拷贝）
+String(const String& other)  
+    :m_Buffer(other.m_Buffer),m_Size(other.m_Size)  
+{
+
+}
+//禁用对象拷贝，例如unique_ptr
+String(const String& other) = delete;
+//自定义拷贝构造函数（深拷贝）
+String(const String& other)  
+    :m_Size(other.m_Size)  
+{  
+    m_Buffer = new char[m_Size+1];  
+    memcpy(m_Buffer, other.m_Buffer, m_Size+1);  
+}
+```
+
+
+```cpp
+#include<iostream>  
+  
+class String {  
+private:  
+    char* m_Buffer;  
+    unsigned int m_Size;  
+public:  
+    String(const char* string) {  
+        m_Size = strlen(string);  
+        m_Buffer = new char[m_Size+1];    //为终止符留一个字节  
+        memcpy(m_Buffer, string, m_Size);  
+        m_Buffer[m_Size] = 0;  
+    }  
+    ~String()  
+    {  
+        delete[] m_Buffer;  
+    }  
+  
+    char& operator[] (unsigned int index)  
+    {  
+        return m_Buffer[index];  
+    }  
+    friend std::ostream& operator<< (std::ostream& stream, const String& string);  
+};  
+  
+std::ostream& operator<< (std::ostream& stream, const String& string) {  
+    stream << string.m_Buffer;  
+    return stream;  
+}  
+  
+int main() {  
+    String string = "ZhangSan";  
+    String second = string;  
+    second[2] = 'e';    //两个字符串同时发生了变化  
+    std::cout << string << std::endl;  
+}
+```
+
 其中关于字符数组的赋值部分存在三种方式
 ```cpp
 //下列两种方法仅在输入的字符数组存在终止符时才可正常运行 
