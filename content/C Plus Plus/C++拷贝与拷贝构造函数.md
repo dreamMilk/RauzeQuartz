@@ -41,11 +41,13 @@ public:
 	String(const char* string)
 	{
 		m_Size = strlen(string);
-		m_Buffer = new char[m_Size];	//需注意字符串后需要终止符
-		for(int i=0;i<m_Size;i++)
-		{
-			
-		}
+		m_Buffer = new char[m_Size+1];	//需注意字符串后需要终止符
+		memcpy(m_Buffer,string,m_Size);  
+  		m_Buffer[m_Size] = 0;
+	}
+	~String()
+	{
+		delete[] m_Buffer;
 	}
 }
 ```
