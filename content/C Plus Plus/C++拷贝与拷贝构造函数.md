@@ -75,7 +75,7 @@ int main() {
 
 因此这种类型的拷贝称之为**浅拷贝**
 
-有时我们想使用独立于原对象的拷贝副本，那么需要进行**深拷贝**。深拷贝的方法有许多，例如 clone 函数或者自定义方法返回一个全新的对象。本文介绍一种使用拷贝构造函数的方法，当创建一个和源对象同类型的对象时会调用该方法
+有时我们想使用独立于原对象的拷贝副本，那么需要进行**深拷贝**。深拷贝的方法有许多，例如 clone 函数或者自定义方法返回一个全新的对象。本文介绍一种使用拷贝构造函数的方法，当创建一个和源对象同类型的对象时会调用该方法，在 [[智能指针#智能指针 unique_ptr|unique]] 中通过禁用该方法阻止对象拷贝
 ```cpp
 //c++默认拷贝构造函数（浅拷贝）
 String(const String& other)  
@@ -105,10 +105,16 @@ private:
 public:  
     String(const char* string) {  
         m_Size = strlen(string);  
-        m_Buffer = new char[m_Size+1];    //为终止符留一个字节  
+        m_Buffer = new char[m_Size+1]; 
         memcpy(m_Buffer, string, m_Size);  
         m_Buffer[m_Size] = 0;  
-    }  
+    }
+    String(const String& other)
+        :m_Size(other.m_Size)
+    {          
+        m_Buffer=newchar[m_Size+1];
+        memcpy(m_Buffer,other.m_Buffer,m_Size+1);
+    }
     ~String()  
     {  
         delete[] m_Buffer;  
@@ -124,25 +130,26 @@ public:
 std::ostream& operator<< (std::ostream& stream, const String& string) {  
     stream << string.m_Buffer;  
     return stream;  
-}  
+}
+
+void printString(String string)  
+{  
+    std::cout << string << std::endl;  
+}
   
 int main() {  
     String string = "ZhangSan";  
-    String second = string;  
-    second[2] = 'e';    //两个字符串同时发生了变化  
-    std::cout << string << std::endl;  
+	printString(string); 
 }
 ```
-
-其中关于字符数组的赋值部分存在三种方式
+在使用 `printString` 函数时会存在一次拷贝构造函数的调用, 每次拷贝对象都需要分配内存，复制内存以及释放内存，为了避免没必要的对象拷贝，只是单纯的使用原对象，建议使用引用传递对象
+> [!TIP] TIP💡 
+>  在多数情况下（除非复制会更快）参数对象建议使用引用传递，根据是否需要编辑对象决定 `const` 关键字的使用。在函数内部可以进一步决定传入对象是否需要拷贝
 ```cpp
-//下列两种方法仅在输入的字符数组存在终止符时才可正常运行 
-//strcpy将源字符数组逐一复制到目标数组，直到源字符数字的终止符停止  
-strcpy(m_Buffer,string);  
-//使用memcpy将源字符数组的最后一位终止符复制过来
-memcpy(m_Buffer,string,m_Size+1);
-
-//人为地增加终止符，保证字符数组是否有终止符，都不影响字符串的创建
-memcpy(m_Buffer,string,m_Size);  
-m_Buffer[m_Size] = 0;
+void printString(const String& string)  
+{
+	//可自行决定是否拷贝
+	String copy = string;
+    std::cout << string << std::endl;  
+}
 ```
