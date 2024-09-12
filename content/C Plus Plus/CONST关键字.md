@@ -4,7 +4,7 @@ tags:
   - cpp
 title: CONST关键字
 date: 2024-09-04 20:20
-updated: 2024-09-04 21:00
+updated: 2024-09-12 23:12
 ---
 
 `const` 不像其他关键字一样，可以改变代码，而是像一种约束代码的机制，它对声明的东西承诺永不改变，如果你承诺（声明）过，那么请你遵守它，这会对你的代码习惯有所提升。
@@ -39,7 +39,25 @@ int main()
 #include<string>
 
 class Entity {
-	int m_X,m_Y;
+	int m_X;
+	mutable int var;
+public:
+	int getX() const
+	{
+		var = 2;
+		return m_X;
+	}
+};
+```
+
+在类方法后增加 `const` 关键字，表示该方法**不改变类中任何属性**。在 `const` 关键字声明的函数中需要改变的变量，需要使用 `mutable` 声明，否则不能改变
+
+```cpp
+#include<iostream>
+#include<string>
+
+class Entity {
+	int m_X;
 public:
 	int getX() const
 	{
@@ -47,5 +65,3 @@ public:
 	}
 };
 ```
-
-在类方法后增加 `const` 关键字，表示该方法**不改变类中任何属性**
