@@ -4,7 +4,7 @@ tags:
   - STL
 title: 动态数组vector
 date: 2024-09-18 22:33
-updated: 2024-09-18 23:37
+updated: 2024-09-19 00:49
 ---
 C++标准模板库（STL）本质上是一个库，由容器和容器类型组成。
 容器包含的数据类型由使用者决定，所有底层数据类型由[[模板]]处理
@@ -57,3 +57,40 @@ int main()
 > 在频繁调整数组时，可以选择存储指针
 > 
 
+# 数组操作
+
+```cpp
+#include<iostream>  
+#include<vector>  
+  
+struct Vertex {  
+    float x, y, z;  
+};  
+  
+std::ostream& operator<<(std::ostream& stream, const Vertex& vertex) {  
+    stream << vertex.x << ", " << vertex.y << ", " << vertex.z;  
+    return stream;  
+}  
+  
+void Function(const std::vector<Vertex>& vertices) {  
+  
+}  
+  
+int main() {  
+    std::vector<Vertex> vertices;  
+    vertices.push_back({1, 2, 3});  
+    vertices.push_back({4, 5, 6});  
+    Function(vertices);  
+  
+    for (int i = 0; i < vertices.size(); i++) {  
+        std::cout << vertices[i] << std::endl;  
+    }  
+  
+    for (Vertex& v : vertices) {  
+        std::cout << v << std::endl;  
+    }  
+  
+    vertices.erase(vertices.begin() + 1);  
+    vertices.clear();  
+}
+```
