@@ -23,7 +23,7 @@ const config: QuartzConfig = {
       cdnCaching: true,
       typography: {
         // header: "Schibsted Grotesk",
-        header:"LXGW WenKai TC",
+        header: "LXGW WenKai TC",
         /*body: "Source Sans Pro",*/
         body: "LXGW WenKai TC",
         code: "JetBrains Mono"
@@ -73,6 +73,7 @@ const config: QuartzConfig = {
       Plugin.CrawlLinks({ markdownLinkResolution: "shortest" }),
       Plugin.Description(),
       Plugin.Latex({ renderEngine: "katex" }),
+      Plugin.HardLineBreaks(),
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [
