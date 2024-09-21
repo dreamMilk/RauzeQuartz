@@ -339,6 +339,32 @@ function main(config) {
 
   // 覆盖原配置中的代理组
   config["proxy-groups"] = [
+    // 延时优选代理组
+    { name: "HK-Auto", ...groupUrlTest, filter: HK },
+    { name: "TW-Auto", ...groupUrlTest, filter: TW },
+    { name: "JP-Auto", ...groupUrlTest, filter: JP },
+    { name: "KR-Auto", ...groupUrlTest, filter: KR },
+    { name: "SG-Auto", ...groupUrlTest, filter: SG },
+    { name: "US-Auto", ...groupUrlTest, filter: US },
+    { name: "UK-Auto", ...groupUrlTest, filter: UK },
+
+    // 故障转移代理组
+    { name: "HK-FallBack", ...groupFallBack, filter: HK },
+    { name: "TW-FallBack", ...groupFallBack, filter: TW },
+    { name: "JP-FallBack", ...groupFallBack, filter: JP },
+    { name: "KR-FallBack", ...groupFallBack, filter: KR },
+    { name: "SG-FallBack", ...groupFallBack, filter: SG },
+    { name: "US-FallBack", ...groupFallBack, filter: US },
+    { name: "UK-FallBack", ...groupFallBack, filter: UK },
+
+    // 负载均衡代理组
+    { name: "HK-LoadBalance", ...groupLoadBalance, filter: HK },
+    { name: "TW-LoadBalance", ...groupLoadBalance, filter: TW },
+    { name: "JP-LoadBalance", ...groupLoadBalance, filter: JP },
+    { name: "KR-LoadBalance", ...groupLoadBalance, filter: KR },
+    { name: "SG-LoadBalance", ...groupLoadBalance, filter: SG },
+    { name: "US-LoadBalance", ...groupLoadBalance, filter: US },
+    { name: "UK-LoadBalance", ...groupLoadBalance, filter: UK },
     // 地区节点代理组
     {
       name: "HongKong",
@@ -439,34 +465,6 @@ function main(config) {
     { name: "Microsoft", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Windows_11.png", ...groupSelect },
     // 游戏平台
     { name: "Games", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Game.png", ...groupSelect },
-    
-
-    // 延时优选代理组
-    { name: "HK-Auto", ...groupUrlTest, filter: HK },
-    { name: "TW-Auto", ...groupUrlTest, filter: TW },
-    { name: "JP-Auto", ...groupUrlTest, filter: JP },
-    { name: "KR-Auto", ...groupUrlTest, filter: KR },
-    { name: "SG-Auto", ...groupUrlTest, filter: SG },
-    { name: "US-Auto", ...groupUrlTest, filter: US },
-    { name: "UK-Auto", ...groupUrlTest, filter: UK },
-
-    // 故障转移代理组
-    { name: "HK-FallBack", ...groupFallBack, filter: HK },
-    { name: "TW-FallBack", ...groupFallBack, filter: TW },
-    { name: "JP-FallBack", ...groupFallBack, filter: JP },
-    { name: "KR-FallBack", ...groupFallBack, filter: KR },
-    { name: "SG-FallBack", ...groupFallBack, filter: SG },
-    { name: "US-FallBack", ...groupFallBack, filter: US },
-    { name: "UK-FallBack", ...groupFallBack, filter: UK },
-
-    // 负载均衡代理组
-    { name: "HK-LoadBalance", ...groupLoadBalance, filter: HK },
-    { name: "TW-LoadBalance", ...groupLoadBalance, filter: TW },
-    { name: "JP-LoadBalance", ...groupLoadBalance, filter: JP },
-    { name: "KR-LoadBalance", ...groupLoadBalance, filter: KR },
-    { name: "SG-LoadBalance", ...groupLoadBalance, filter: SG },
-    { name: "US-LoadBalance", ...groupLoadBalance, filter: US },
-    { name: "UK-LoadBalance", ...groupLoadBalance, filter: UK }
   ];
 
   // 覆盖原配置中的规则
@@ -481,13 +479,13 @@ function main(config) {
 
   config["mode"] = "rule";                          // 规则模式：rule（规则） / global（全局代理）/ direct（全局直连）/ script (脚本)
   config["log-level"] = "info";                     // 设置日志输出级别 (5 个级别：silent / error / warning / info / debug）
-  config["allow-lan"] = True;                      // 允许局域网的连接（共享代理）
+  config["allow-lan"] = true;                      // 允许局域网的连接（共享代理）
   config["bind-address"] = "*";                    // 监听IP白名单，可绑定单个IPv4和v6地址，"*" 为绑定所有IP地址，仅在将allow-lan设置为true时适用
-  config["ipv6"] = True;                           // 开启 IPv6 总开关，关闭阻断所有 IPv6 链接和屏蔽 DNS 请求 AAAA 记录
-  config["udp"] = True;                            // 是否允许 UDP 通过代理，默认为 false
+  config["ipv6"] = true;                           // 开启 IPv6 总开关，关闭阻断所有 IPv6 链接和屏蔽 DNS 请求 AAAA 记录
+  config["udp"] = true;                            // 是否允许 UDP 通过代理，默认为 false
 
-  config["unified-delay"] = True;                  // 开启统一延迟时，会进行两次延迟测试，以消除连接握手等带来的不同类型节点的延迟差异，可选值 true/false
-  config["tcp-concurrent"] = True;                 // TCP 并发，可选值 true/false
+  config["unified-delay"] = true;                  // 开启统一延迟时，会进行两次延迟测试，以消除连接握手等带来的不同类型节点的延迟差异，可选值 true/false
+  config["tcp-concurrent"] = true;                 // TCP 并发，可选值 true/false
   config["find-process-mode"] = "strict";          // 控制是否让 Clash 去匹配进程，always 开启，强制匹配所有进程，strict 默认，由 Clash 判断是否开启，off 不匹配进程，推荐在路由器上使用此模式
   config["global-client-fingerprint"] = "chrome"; // 全局 TLS 指纹，优先低于 proxy 内的 client-fingerprint，目前支持开启 TLS 传输的 TCP/grpc/WS/HTTP , 支持协议有 VLESS,Vmess 和 trojan
 
