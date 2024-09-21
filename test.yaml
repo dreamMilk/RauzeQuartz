@@ -1,0 +1,550 @@
+// 国内DNS服务器
+const domesticNameservers = [
+  "https://dns.alidns.com/dns-query", // 阿里云公共DNS
+  "https://doh.pub/dns-query", // 腾讯DNSPod
+  "https://doh.360.cn/dns-query" // 360安全DNS
+];
+// 国外DNS服务器
+const foreignNameservers = [
+  "https://1.1.1.1/dns-query", // Cloudflare(主)
+  "https://1.0.0.1/dns-query", // Cloudflare(备)
+  "https://208.67.222.222/dns-query", // OpenDNS(主)
+  "https://208.67.220.220/dns-query", // OpenDNS(备)
+  "https://194.242.2.2/dns-query", // Mullvad(主)
+  "https://194.242.2.3/dns-query" // Mullvad(备)
+];
+// DNS配置
+const dnsConfig = {
+  "enable": true,
+  "prefer-h3": false,
+  "listen": "0.0.0.0:1053",
+  "ipv6": true,
+  "use-system-hosts": false,
+  "cache-algorithm": "arc",
+  "enhanced-mode": "fake-ip",
+  "fake-ip-range": "198.18.0.1/16",
+  "fake-ip-filter": [
+    // 本地主机/设备
+    "+.lan",
+    "+.local",
+    // Windows网络出现小地球图标
+    "+.msftconnecttest.com",
+    "+.msftncsi.com",
+    // QQ快速登录检测失败
+    "localhost.ptlogin2.qq.com",
+    "localhost.sec.qq.com",
+    // 微信快速登录检测失败
+    "localhost.work.weixin.qq.com",
+    // 其他过滤器
+    '*.lan', 'cable.auth.com', '*.msftconnecttest.com', '*.msftncsi.com',
+    'network-test.debian.org', 'detectportal.firefox.com', 'resolver1.opendns.com',
+    '*.srv.nintendo.net', '*.stun.playstation.net', 'xbox.*.microsoft.com',
+    '*.xboxlive.com', 'stun.*', 'global.turn.twilio.com', 'global.stun.twilio.com',
+    'localhost.*.qq.com', 'localhost.*.weixin.qq.com', '*.logon.battlenet.com.cn',
+    '*.logon.battle.net', '*.blzstatic.cn', 'music.163.com', '*.music.163.com',
+    '*.126.net', 'musicapi.taihe.com', 'music.taihe.com', 'songsearch.kugou.com',
+    'trackercdn.kugou.com', '*.kuwo.cn', 'api-jooxtt.sanook.com', 'api.joox.com',
+    'joox.com', 'y.qq.com', '*.y.qq.com', 'streamoc.music.tc.qq.com',
+    'mobileoc.music.tc.qq.com', 'isure.stream.qqmusic.qq.com', 'dl.stream.qqmusic.qq.com',
+    'aqqmusic.tc.qq.com', 'amobile.music.tc.qq.com', '*.xiami.com',
+    '*.music.migu.cn', 'music.migu.cn', 'proxy.golang.org', '*.mcdn.bilivideo.cn',
+    '*.cmpassport.com', 'id6.me', 'open.e.189.cn', 'mdn.open.wo.cn', 'opencloud.wostore.cn',
+    'auth.wosms.cn', '*.jegotrip.com.cn', '*.icitymobile.mobi', '*.pingan.com.cn',
+    '*.cmbchina.com', 'pool.ntp.org', '*.pool.ntp.org', 'ntp.*.com', 'time.*.com',
+    'ntp?.*.com', 'time?.*.com', 'time.*.gov', 'time.*.edu.cn', '*.ntp.org.cn',
+    'PDC._msDCS.*.*', 'DC._msDCS.*.*', 'GC._msDCS.*.*'
+  ],
+  "default-nameserver": ["223.5.5.5", "119.29.29.29", "1.1.1.1", "8.8.8.8"],
+  "nameserver": [...domesticNameservers, ...foreignNameservers],
+  "proxy-server-nameserver": [...domesticNameservers, ...foreignNameservers],
+  "nameserver-policy": {
+    "geosite:private,cn,geolocation-cn": domesticNameservers,
+    "geosite:google,youtube,telegram,gfw,geolocation-!cn": foreignNameservers
+  }
+};
+// 规则集通用配置
+const ruleProviderCommon = {
+  "type": "http",
+  "behavior": "classical",
+  "format": "text",
+  "interval": 86400
+};
+const ruleProvideDomain = {
+  "type": "http",
+  "behavior": "domain",
+  "format": "mrs",
+  "interval": 86400
+};
+const ruleProvideIpcidr = {
+  "type": "http",
+  "behavior": "ipcidr",
+  "format": "mrs",
+  "interval": 86400
+};
+// 规则集配置
+const ruleProviders = {
+  "private-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/private-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs"
+  },
+  "private-ip": {
+    ...ruleProvideIpcidr,
+    "path": "./ruleset/private-ip.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs"
+  },
+  "ai-classical": {
+    ...ruleProviderCommon,
+    "path": "./ruleset/openai-classical.list",
+    "url": "https://raw.gitmirror.com/Coldvvater/Mononoke/master/Clash/Rules/AI.list"
+  },
+  "youtube-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/youtube-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs"
+  },
+  "netflix-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/netflix-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/netflix.mrs"
+  },
+  "netflix-ip": {
+    ...ruleProvideIpcidr,
+    "path": "./ruleset/netflix-ip.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/netflix.mrs"
+  },
+  "emby-classical": {
+    ...ruleProviderCommon,
+    "path": "./ruleset/emby-classical.list",
+    "url": "https://raw.gitmirror.com/Coldvvater/Mononoke/master/Clash/Rules/Emby.list"
+  },
+  "bahamut-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/bahamut-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bahamut.mrs"
+  },
+  "biliintl-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/biliintl-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/biliintl.mrs"
+  },
+  "bilibili-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/bilibili-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bilibili.mrs"
+  },
+  "bilibili-ip": {
+    ...ruleProvideIpcidr,
+    "path": "./ruleset/bilibili-ip.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geoip/bilibili.mrs"
+  },
+  "spotify-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/spotify-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/spotify.mrs"
+  },
+  "neteasemusic-classical": {
+    ...ruleProviderCommon,
+    "path": "./ruleset/neteasemusic-classical.list",
+    "url": "https://raw.gitmirror.com/Coldvvater/Mononoke/master/Clash/Rules/NetEaseMusic.list"
+  },
+  "tiktok-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/tiktok-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs"
+  },
+  "streamingmedia-classical": {
+    ...ruleProviderCommon,
+    "path": "./ruleset/streamingmedia-classical.list",
+    "url": "https://raw.gitmirror.com/Coldvvater/Mononoke/master/Clash/Rules/ProxyMedia.list"
+  },
+  "telegram-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/telegram-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs"
+  },
+  "telegram-ip": {
+    ...ruleProvideIpcidr,
+    "path": "./ruleset/telegram-ip.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs"
+  },
+  "github-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/github-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/github.mrs"
+  },
+  "twitter-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/twitter-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitter.mrs"
+  },
+  "twitter-ip": {
+    ...ruleProvideIpcidr,
+    "path": "./ruleset/twitter-ip.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/twitter.mrs"
+  },
+  "apple-classical": {
+    ...ruleProviderCommon,
+    "path": "./ruleset/apple-classical.list",
+    "url": "https://raw.gitmirror.com/Coldvvater/Mononoke/master/Clash/Rules/AppleProxyService.list"
+  },
+  "apple-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/apple-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.mrs"
+  },
+  "apple-ip": {
+    ...ruleProvideIpcidr,
+    "path": "./ruleset/apple-ip.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geoip/apple.mrs"
+  },
+  "google-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/google-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs"
+  },
+  "google-ip": {
+    ...ruleProvideIpcidr,
+    "path": "./ruleset/google-ip.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs"
+  },
+  "microsoft-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/microsoft-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.mrs"
+  },
+  "games-classical": {
+    ...ruleProviderCommon,
+    "path": "./ruleset/games-classical.list",
+    "url": "https://raw.gitmirror.com/Coldvvater/Mononoke/master/Clash/Rules/Game.list"
+  },
+  "cn-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/cn-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs"
+  },
+  "proxy-domain": {
+    ...ruleProvideDomain,
+    "path": "./ruleset/proxy-domain.list",
+    "url": "https://raw.gitmirror.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs"
+  }
+};
+// 规则
+const rules = [
+  // 自定义规则
+  "DOMAIN-SUFFIX,clash.razord.top,DIRECT", // clash.razord.top 直连
+  "DOMAIN-SUFFIX,yacd.metacubex.one,DIRECT", // yacd.metacubex.one 直连
+  "DOMAIN-SUFFIX,yacd.haishan.me,DIRECT", // yacd.haishan.me 直连
+  "DOMAIN-SUFFIX,d.metacubex.one,DIRECT", // d.metacubex.one 直连
+  "DOMAIN-SUFFIX,raw.gitmirror.com,Proxy", // raw.gitmirror.com 代理
+
+  // 规则集
+  "RULE-SET,private-domain,DIRECT", // 私有域直连
+  "RULE-SET,ai-classical,AIGC", // AI古典规则集
+  "RULE-SET,youtube-domain,YouTube", // YouTube 域名规则集
+  "RULE-SET,netflix-domain,NETFLIX", // Netflix 域名规则集
+  "RULE-SET,emby-classical,Emby", // Emby 古典规则集
+  "RULE-SET,bahamut-domain,TaiWan", // 巴哈姆特域名规则集
+  "RULE-SET,biliintl-domain,Streaming", // 国际版哔哩哔哩域名规则集
+  "RULE-SET,bilibili-domain,BiliBili", // 哔哩哔哩域名规则集
+  "RULE-SET,spotify-domain,Spotify", // Spotify 域名规则集
+  "RULE-SET,neteasemusic-classical,NetEaseMusic", // 网易云音乐古典规则集
+  "RULE-SET,tiktok-domain,TikTok", // TikTok 域名规则集
+  "RULE-SET,streamingmedia-classical,Streaming", // 流媒体古典规则集
+  "RULE-SET,telegram-domain,Telegram", // Telegram 域名规则集
+  "RULE-SET,github-domain,Proxy", // GitHub 域名规则集
+  "RULE-SET,twitter-domain,X", // Twitter 域名规则集
+  "RULE-SET,apple-classical,Proxy", // 苹果古典规则集
+  "RULE-SET,apple-domain,Apple", // 苹果域名规则集
+  "RULE-SET,google-domain,Google", // Google 域名规则集
+  "RULE-SET,microsoft-domain,Microsoft", // 微软域名规则集
+  "RULE-SET,games-classical,Games", // 游戏古典规则集
+  "RULE-SET,proxy-domain,Proxy", // 代理域名规则集
+
+  // IP 规则集
+  "RULE-SET,google-ip,Google", // Google IP 规则集
+  "RULE-SET,netflix-ip,NETFLIX", // Netflix IP 规则集
+  "RULE-SET,telegram-ip,Telegram", // Telegram IP 规则集
+  "RULE-SET,twitter-ip,X", // Twitter IP 规则集
+  "RULE-SET,cn-domain,DIRECT", // 中国域名直连
+  "RULE-SET,bilibili-ip,BiliBili", // 哔哩哔哩 IP 规则集
+  "RULE-SET,apple-ip,Apple", // 苹果 IP 规则集
+  "RULE-SET,private-ip,DIRECT", // 私有 IP 直连
+  "GEOIP,CN,DIRECT", // 中国 IP 直连
+
+  // 其他规则
+  "MATCH,Final" // 最终匹配规则
+];
+// 代理组通用配置
+const HK = '^(?=.*((?i)🇭🇰|香港|(\b(HK|Hong)\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$';
+const TW = '^(?=.*((?i)🇹🇼|台湾|(\b(TW|Tai|Taiwan)\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+const JP = '^(?=.*((?i)🇯🇵|日本|川日|东京|大阪|泉日|埼玉|(\b(JP|Japan)\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+const KR = '^(?=.*((?i)🇰🇷|韩国|韓|首尔|(\b(KR|Korea)\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+const SG = '^(?=.*((?i)🇸🇬|新加坡|狮|(\b(SG|Singapore)\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+const US = '^(?=.*((?i)🇺🇸|美国|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|(\b(US|United States)\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+const UK = '^(?=.*((?i)🇬🇧|英国|伦敦|(\b(UK|United Kingdom)\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+const All = '^(?=.*(.))(?!.*((?i)群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|(\b(USE|USED|TOTAL|Traffic|Expire|EMAIL|Panel|Channel|Author)\b|(\d{4}-\d{2}-\d{2}|\d+G)))).*$'
+
+const groupSelect = {
+  "type": "select",
+  // "proxies": [Proxy, HongKong, TaiWan, Japan, Korea, Singapore, America, UnitedKingdom, AllServer, DIRECT]
+};
+const groupUrlTest = {
+  "type": "url-test",
+  "interval": 300,
+  "tolerance": 20,
+  "lazy": true,
+  "url": "http://cp.cloudflare.com",
+  "disable-udp": false,
+  "timeout": 2000,
+  "max-failed-times": 3,
+  "hidden": true,
+  "include-all-providers": true
+};
+const groupFallBack = {
+  "type": "fallback",
+  "interval": 300,
+  "lazy": true,
+  "url": "http://cp.cloudflare.com",
+  "disable-udp": false,
+  "timeout": 2000,
+  "max-failed-times": 3,
+  "hidden": true,
+  "include-all-providers": true
+};
+const groupLoadBalance = {
+  "type": "load-balance",
+  "interval": 300,
+  "lazy": true,
+  "url": "http://cp.cloudflare.com",
+  "disable-udp": false,
+  "strategy": "consistent-hashing",
+  "timeout": 2000,
+  "max-failed-times": 3,
+  "hidden": true,
+  "include-all-providers": true
+};
+
+// 程序入口
+function main(config) {
+  const proxyCount = config?.proxies?.length ?? 0;
+  const proxyProviderCount =
+    typeof config?.["proxy-providers"] === "object" ? Object.keys(config["proxy-providers"]).length : 0;
+  if (proxyCount === 0 && proxyProviderCount === 0) {
+    throw new Error("配置文件中未找到任何代理");
+  }
+
+  // 覆盖原配置中DNS配置
+  config["dns"] = dnsConfig;
+
+  // 覆盖原配置中的代理组
+  config["proxy-groups"] = [
+    // 地区节点代理组
+    {
+      name: "HongKong",
+      icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png",
+      type: "select",
+      proxies: ["HK-Auto", "HK-FallBack", "HK-LoadBalance"],
+      includeAllProviders: true,
+      filter: HK
+    },
+    {
+      name: "TaiWan",
+      icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/China.png",
+      type: "select",
+      proxies: ["TW-Auto", "TW-FallBack", "TW-LoadBalance"],
+      includeAllProviders: true,
+      filter: TW
+    },
+    {
+      name: "Japan",
+      icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Japan.png",
+      type: "select",
+      proxies: ["JP-Auto", "JP-FallBack", "JP-LoadBalance"],
+      includeAllProviders: true,
+      filter: JP
+    },
+    {
+      name: "Korea",
+      icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Korea.png",
+      type: "select",
+      proxies: ["KR-Auto", "KR-FallBack", "KR-LoadBalance"],
+      includeAllProviders: true,
+      filter: KR
+    },
+    {
+      name: "Singapore",
+      icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Singapore.png",
+      type: "select",
+      proxies: ["SG-Auto", "SG-FallBack", "SG-LoadBalance"],
+      includeAllProviders: true,
+      filter: SG
+    },
+    {
+      name: "America",
+      icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/United_States.png",
+      type: "select",
+      proxies: ["US-Auto", "US-FallBack", "US-LoadBalance"],
+      includeAllProviders: true,
+      filter: US
+    },
+    {
+      name: "UnitedKingdom",
+      icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/United_Kingdom.png",
+      type: "select",
+      proxies: ["UK-Auto", "UK-FallBack", "UK-LoadBalance"],
+      includeAllProviders: true,
+      filter: UK
+    },
+
+    // 全部节点
+    {
+      name: "AllServer",
+      icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Airport.png",
+      type: "select",
+      includeAllProviders: true,
+      filter: All
+    },
+    // 漏网之鱼
+    { name: "Final", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Final.png", ...groupSelect, proxies: ["Proxy", "DIRECT"] },
+    // 节点切换
+    { name: "Proxy", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Rocket.png", ...groupSelect, proxies: ["HongKong", "TaiWan", "Japan", "Korea", "Singapore", "America", "UnitedKingdom", "AllServer", "DIRECT"] },
+    // AI平台
+    { name: "AIGC", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png", ...groupSelect },
+    // YouTube
+    { name: "YouTube", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/YouTube.png", ...groupSelect },
+    // Netflix
+    { name: "NETFLIX", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Netflix.png", ...groupSelect },
+    // Emby
+    { name: "Emby", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Emby.png", ...groupSelect },
+    // 哔哩哔哩
+    { name: "BiliBili", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/bilibili_3.png", ...groupSelect, proxies: ["DIRECT", "HongKong", "TaiWan"] },
+    // Spotify
+    { name: "Spotify", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Spotify.png", ...groupSelect },
+    // 网易云音乐
+    { name: "NetEaseMusic", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Netease_Music.png", ...groupSelect, proxies: ["DIRECT"] },
+    // TikTok
+    { name: "TikTok", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/TikTok.png", ...groupSelect },
+    // 国际流媒体
+    { name: "Streaming", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Streaming.png", ...groupSelect },
+    // Telegram
+    { name: "Telegram", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Telegram_X.png", ...groupSelect },
+    // X(Twitter)
+    { name: "X", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/X.png", ...groupSelect },
+    // 苹果服务
+    { name: "Apple", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Apple_1.png", ...groupSelect },
+    // 谷歌服务
+    { name: "Google", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Google_Search.png", ...groupSelect },
+    // 微软服务
+    { name: "Microsoft", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Windows_11.png", ...groupSelect },
+    // 游戏平台
+    { name: "Games", icon: "https://raw.gitmirror.com/Koolson/Qure/master/IconSet/Color/Game.png", ...groupSelect },
+    
+
+    // 延时优选代理组
+    { name: "HK-Auto", ...groupUrlTest, filter: HK },
+    { name: "TW-Auto", ...groupUrlTest, filter: TW },
+    { name: "JP-Auto", ...groupUrlTest, filter: JP },
+    { name: "KR-Auto", ...groupUrlTest, filter: KR },
+    { name: "SG-Auto", ...groupUrlTest, filter: SG },
+    { name: "US-Auto", ...groupUrlTest, filter: US },
+    { name: "UK-Auto", ...groupUrlTest, filter: UK },
+
+    // 故障转移代理组
+    { name: "HK-FallBack", ...groupFallBack, filter: HK },
+    { name: "TW-FallBack", ...groupFallBack, filter: TW },
+    { name: "JP-FallBack", ...groupFallBack, filter: JP },
+    { name: "KR-FallBack", ...groupFallBack, filter: KR },
+    { name: "SG-FallBack", ...groupFallBack, filter: SG },
+    { name: "US-FallBack", ...groupFallBack, filter: US },
+    { name: "UK-FallBack", ...groupFallBack, filter: UK },
+
+    // 负载均衡代理组
+    { name: "HK-LoadBalance", ...groupLoadBalance, filter: HK },
+    { name: "TW-LoadBalance", ...groupLoadBalance, filter: TW },
+    { name: "JP-LoadBalance", ...groupLoadBalance, filter: JP },
+    { name: "KR-LoadBalance", ...groupLoadBalance, filter: KR },
+    { name: "SG-LoadBalance", ...groupLoadBalance, filter: SG },
+    { name: "US-LoadBalance", ...groupLoadBalance, filter: US },
+    { name: "UK-LoadBalance", ...groupLoadBalance, filter: UK }
+  ];
+
+  // 覆盖原配置中的规则
+  config["rule-providers"] = ruleProviders;
+  config["rules"] = rules;
+
+  config["port"] = 7890;                           // HTTP(S) 代理服务器端口
+  config["socks-port"] = 7891;                     // SOCKS5 代理端口
+  config["mixed-port"] = 7892;                     // 混合端口，HTTP和SOCKS5用一个端口
+  config["redir-port"] = 7893;                     // 透明代理端口，用于 Linux 和 MacOS
+  config["tproxy-port"] = 7894;                    // Transparent proxy server port for Linux (TProxy TCP and TProxy UDP)
+
+  config["mode"] = "rule";                          // 规则模式：rule（规则） / global（全局代理）/ direct（全局直连）/ script (脚本)
+  config["log-level"] = "info";                     // 设置日志输出级别 (5 个级别：silent / error / warning / info / debug）
+  config["allow-lan"] = True;                      // 允许局域网的连接（共享代理）
+  config["bind-address"] = "*";                    // 监听IP白名单，可绑定单个IPv4和v6地址，"*" 为绑定所有IP地址，仅在将allow-lan设置为true时适用
+  config["ipv6"] = True;                           // 开启 IPv6 总开关，关闭阻断所有 IPv6 链接和屏蔽 DNS 请求 AAAA 记录
+  config["udp"] = True;                            // 是否允许 UDP 通过代理，默认为 false
+
+  config["unified-delay"] = True;                  // 开启统一延迟时，会进行两次延迟测试，以消除连接握手等带来的不同类型节点的延迟差异，可选值 true/false
+  config["tcp-concurrent"] = True;                 // TCP 并发，可选值 true/false
+  config["find-process-mode"] = "strict";          // 控制是否让 Clash 去匹配进程，always 开启，强制匹配所有进程，strict 默认，由 Clash 判断是否开启，off 不匹配进程，推荐在路由器上使用此模式
+  config["global-client-fingerprint"] = "chrome"; // 全局 TLS 指纹，优先低于 proxy 内的 client-fingerprint，目前支持开启 TLS 传输的 TCP/grpc/WS/HTTP , 支持协议有 VLESS,Vmess 和 trojan
+
+  config["external-controller"] = "127.0.0.1:9090"; // 外部控制器，可以使用 RESTful API 来控制你的 Clash 内核，API 监听地址，你可以将 127.0.0.1 修改为 0.0.0.0 来监听所有 IP
+  config["external-ui"] = "ui";                    // 可以将静态网页资源 (比如 Clash-dashboard) 运行在 Clash API, 路径为 API 地址/ui，可以为绝对路径，或者 Clash 工作目录的相对路径
+  config["external-ui-url"] = 'https://mirror.ghproxy.com/https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip'; // 外部 UI 的 URL
+
+  config["geodata-mode"] = false;                  // 更改 geoip 使用文件，mmdb 或者 dat，可选 true/false,true为 dat，此项有默认值 false
+  config["geodata-loader"] = "memconservative";     // GEO 文件加载模式，standard：标准加载器 memconservative：专为内存受限 (小内存) 设备优化的加载器 (默认值)
+  config["geo-auto-update"] = true;                 // 自动更新 GEO
+  config["geo-update-interval"] = 24;               // 更新间隔，单位为小时
+  config["geox-url"] = {
+    "mmdb": 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb',
+    "asn": 'https://mirror.ghproxy.com/https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb'
+    // 自定义 GEO 下载地址
+  };
+
+  config["profile"] = {
+    "store-selected": true,               // 储存 API 对策略组的选择，以供下次启动时使用
+    "store-fake-ip": true                 // 储存 fakeip 映射表，域名再次发生连接时，使用原有映射地址
+  };
+
+  config["sniffer"] = {
+    "enable": true,                       // 是否启用sniffer
+    "force-dns-mapping": true,            // 对 redir-host 类型识别的流量进行强制嗅探
+    "parse-pure-ip": true,                // 对所有未获取到域名的流量进行强制嗅探
+    "override-destination": true,         // 是否使用嗅探结果作为实际访问，默认为 true
+    "sniff": {
+      "HTTP": {
+        "ports": [80, 8080 - 8880],        // ports字段，表示端口范围。示例：ports: [80, 8080-8880]
+        "override-destination": true     // override-destination字段（可选），用于覆盖全局override-destination设置
+      },
+      "TLS": {
+        "ports": [443, 8443]
+      },
+      "QUIC": {
+        "ports": [443, 8443]
+      }
+    },
+    "force-domain": [                     // 需要强制嗅探的域名（默认情况下只对IP进行嗅探）
+      "+.v2ex.com"
+    ],
+    "skip-domain": [                      // 需要跳过嗅探的域名。主要解决部分站点sni字段非域名，导致嗅探结果异常的问题，如米家设备Mijia Cloud
+      "Mijia Cloud"
+    ]
+  };
+
+  config["tun"] = {
+    "enable": false,                      // 启用 tun
+    "stack": "system",                    // tun 模式堆栈,可用值：system/gvisor/mixed
+    "dns-hijack": [                      // dns 劫持，将匹配到的连接导入内部 dns 模块，不书写协议则为 udp://
+      "any:53"
+    ],
+    "auto-route": true,                   // 自动设置全局路由，可以自动将全局流量路由进入 tun 网卡
+    "auto-detect-interface": true         // 自动选择流量出口接口，多出口网卡同时连接的设备建议手动指定出口网卡
+  };
+
+  // 返回修改后的配置
+  return config;
+}
