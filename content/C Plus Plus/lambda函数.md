@@ -1,6 +1,9 @@
 ---
 aliases: 
-tags: 
+tags:
+  - cpp
+  - lambda
+  - functionPoint
 title: lambda函数
 date: 2024-10-20 23:09
 updated: 2024-10-26 00:16
