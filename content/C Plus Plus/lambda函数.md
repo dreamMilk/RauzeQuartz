@@ -3,7 +3,7 @@ aliases:
 tags: 
 title: lambda函数
 date: 2024-10-20 23:09
-updated: 2024-10-26 00:08
+updated: 2024-10-26 00:16
 ---
 Lambda 是定义匿名函数的方式，使用该方法创建函数，并不需要实际创建一个函数，更像是一个快速搭建的一次性函数，实现所需的功能。与其说是一个函数，其实更像是一个变量。不用通过函数定义就可以定义一个函数的方法。
 # Lambda 是干什么的
@@ -50,3 +50,20 @@ int main()
 }
 ```
 `[=]` 表示值传递所有变量，`[&]` 表示引用传递所有变量，`[varName]` 表示传递指定变量，`[&varName]` 表示引用传递指定变量。不能使用原始函数指针，需要使用 `function` 类定义
+```cpp
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<functional>
+
+int main()
+{
+	std::vector<int> values = {1,5,4,2,3};
+	
+	//在vector中寻找第一个大于3的数
+	auto it = std::find_if(values.begin(),values.end(),[](int value){return value>3;});
+	
+	std::cout << *it << std::endl;
+}
+```
+在部分函数调用中需要给定规则函数，使用 lambda 函数可以快速实现相关功能，避免无意义的函数创建
